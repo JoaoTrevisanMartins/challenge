@@ -1,0 +1,27 @@
+grupo 2:
+João
+Lígia
+Marília
+
+DNS (hostname)
+escalabilidade (autoscaling)
+teste de carga (entregar as métricas)
+as empresas que atendemos são formadas pelos nossos mentores
+
+
+Brasil, EUA, Europa e Ásia
+Na mão vs Script?
+mais barato, mais rapido e mais performatico
+00h --> pior pico
+ferramentas para teste de carga --> apache AB, bees with machine guns, locust
+dados públicos
+"Papai ta aqui" é o nome da empresa
+
+
+Perguntas:
+Multi-região ou cache?
+Cloudformation?
+Quantidade de requisições esperada no horário de pico
+Latencia máxima aceitavel?
+Valor esperado/disponivel?
+Paises/locais que são mais criticos
