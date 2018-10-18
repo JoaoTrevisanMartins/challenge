@@ -1,16 +1,16 @@
 Etapa 1:
-checar latência da aplicação em regiões presentes no Brasil, EUA, Europa e Ásia
+checar latÃªncia da aplicaÃ§Ã£o em regiÃµes presentes no Brasil, EUA, Europa e Ãsia
 
 Etapa 2:
-fazer a arquitetura na mão pelo console
+fazer a arquitetura na mÃ£o pelo console
 
 Etapa 3:
-checar a razão preço/latência
+checar a razÃ£o preÃ§o/latÃªncia
 
 Etapa 4:
 gerar o JSON via CloudFormer
 
 Etapa 5:
-utilizar mappings o JSON funcionar em qualquer reguião
+utilizar mappings o JSON funcionar em qualquer regiÃ£o
 
 
