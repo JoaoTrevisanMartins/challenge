@@ -18,10 +18,21 @@ dados públicos
 "Papai ta aqui" é o nome da empresa
 
 
-Perguntas:
+Perguntas 1:
 Multi-região ou cache?
 Cloudformation?
 Quantidade de requisições esperada no horário de pico
 Latencia máxima aceitavel?
 Valor esperado/disponivel?
 Paises/locais que são mais criticos
+
+Respostas 1:
+pico 7500 usuarios
+latencia em diversas regioes
+razao preco/latencia outras regioes
+
+Perguntas 2:
+Qual é o número de requisições média fora do pico? (para calcular o custo mensal)
+
+Respostas 2:
+
