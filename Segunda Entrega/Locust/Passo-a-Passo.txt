@@ -1,0 +1,5 @@
+acessar no prompt o diretório em que o arquivo "locustfile.py" está
+rodar o comando "locust --host=LINK DO SITE"
+acessar no browser o endereço "http://localhost:8089/"
+parametrizar com o número de usuários para simular e com o número de requisições por segundo
+clicar em "Start swarming"
