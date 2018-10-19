@@ -32,7 +32,11 @@ latencia em diversas regioes
 razao preco/latencia outras regioes
 
 Perguntas 2:
-Qual é o número de requisições média fora do pico? (para calcular o custo mensal)
+Qual é o número de requisições média (por segundo) fora do pico? (para calcular o custo mensal)
+data transfer out
+média de duração da conexão
+total de dados processados por ALB (em GB/mês)
+(OPCIONAL) DNS Failover Health Checks (Route 53)
 
 Respostas 2:
 
