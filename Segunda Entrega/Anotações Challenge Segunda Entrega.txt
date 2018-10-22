@@ -27,7 +27,7 @@ Valor esperado/disponivel?
 Paises/locais que são mais criticos
 
 Respostas 1:
-pico 7500 usuarios
+pico 7500 usuarios simultaneos
 latencia em diversas regioes
 razao preco/latencia outras regioes
 
@@ -39,4 +39,6 @@ total de dados processados por ALB (em GB/mês)
 (OPCIONAL) DNS Failover Health Checks (Route 53)
 
 Respostas 2:
-
+com alta disponibilidade
+utilizar métricas de "Data Transfer Out" e "total de dados processados por ALB" que quisermos
+"média de duração da conexão" ainda não informada
