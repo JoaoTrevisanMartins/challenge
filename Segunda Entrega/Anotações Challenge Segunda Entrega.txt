@@ -42,3 +42,7 @@ Respostas 2:
 com alta disponibilidade
 utilizar métricas de "Data Transfer Out" e "total de dados processados por ALB" que quisermos
 "média de duração da conexão" ainda não informada
+
+Perguntas 3:
+Há leis de privacidade de dados relevantes?
+Os dados podem ficar em outros países (estar sob as leis de outros países)?
