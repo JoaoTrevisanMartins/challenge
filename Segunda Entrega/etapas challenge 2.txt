@@ -8,9 +8,9 @@ Etapa 3:
 checar a razão preço/latência
 
 Etapa 4:
-gerar o JSON via CloudFormer
+Stress test usando o Bees with Machine Guns
 
 Etapa 5:
-utilizar mappings o JSON funcionar em qualquer região
+gerar o JSON via CloudFormer
 
 
