@@ -85,7 +85,6 @@
               "GroupSet" : [ { "Ref" : "ALBInstanceSecurityGrouptoEC2" } ]
               } ],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
-           
            "#!/bin/bash -x\n",
            "yum -y install git\n",
            "curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash\n",
