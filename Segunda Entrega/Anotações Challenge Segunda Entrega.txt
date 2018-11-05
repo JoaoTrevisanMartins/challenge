@@ -8,7 +8,6 @@ escalabilidade (autoscaling)
 teste de carga (entregar as métricas)
 as empresas que atendemos são formadas pelos nossos mentores
 
-
 Brasil, EUA, Europa e Ásia
 Na mão vs Script?
 mais barato, mais rapido e mais performatico
@@ -44,9 +43,10 @@ utilizar métricas de "Data Transfer Out" e "total de dados processados por ALB" 
 "média de duração da conexão" ainda não informada
 
 Perguntas 3:
-Número de usuários simultâneos no pico?
 Há leis de privacidade de dados relevantes?
 Os dados podem ficar em outros países (estar sob as leis de outros países)?
 Os dados devem seguir algum compliance específico?
 HTTPS?
+
+Respostas 3:
 
