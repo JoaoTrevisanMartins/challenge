@@ -1,0 +1,7 @@
+PARA TRANSFERIR ARQUIVOS DA EC2 PARA S3
+
+- criar role para a EC2 ter S3 Full Access
+- atachar role na EC2
+- para mudar permissão de arquivo, usar sudo chmod 600 arquivo.txt (exemplo) -> permite read e write apenas para o owner
+- para mudar permissão de pasta, usar sudo chmod -R ugo+rw /pathToFile
+- digitar aws s3 cp arquivo.txt s3://nomeDoBucket/arquivo2.txt (nome do arquivo e extensão)
