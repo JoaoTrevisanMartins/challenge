@@ -1,6 +1,7 @@
 acessar a instância "Vegeta" (mudar no commando SSH root por ec2-user)
 por meio do comando "vim test.sh" acessar o arquivo para mudar os parametros (para editar pressione i e depois crtl + C)
 após as alterações digitar ":wq" para salvar e sair do arquivo
+dar o comando "sudo httpd"
 por linha de comando digitar: chmod +x test.sh
 por linha de comando digitar: sudo ./test.sh [nro de testes] "[URL do Site]"
 para ver o plot dos testes acessar: "http://[DNS do Vegeta]/plot[nro do teste].html"
