@@ -87,7 +87,6 @@
      "Type" : "AWS::AutoScaling::AutoScalingGroup",
      "Properties" : {
       "AutoScalingGroupName" : "AutoScalingGroupChallenge2",
-      "AvailabilityZones" : { "Fn::GetAZs" : ""},
       "VPCZoneIdentifier" : [ {"Ref": "PublicSubnet1"}, {"Ref" : "PublicSubnet2"} ],
       "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
       "MinSize" : "2",

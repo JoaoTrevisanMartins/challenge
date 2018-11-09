@@ -18,24 +18,39 @@
     "KeyPair" :{
       "Description" : "WebServer EC2 instance type",
       "Type" : "String",
-      "Default" : "KeyPair-NorthVirginia"
+      "Default" : "MyKeyPair"
     },
 
-    "CertificateArn1": {
-      "Description" : "Certificates specified for the listener",
-      "Type": "String",
-      "Default" : ""
-    },
+     "HostedZoneName" : {
+       "Type" : "String",
+       "Default" : "blackfridaypapai.ga"
+      },
 
-    "CertificateArn2": {
-      "Description" : "Certificates specified for the listener",
-      "Type": "String",
-      "Default" : ""
-    }
+      "HostedZoneID" : {
+       "Type" : "String",
+       "Default" : "Z2704ULUAWB6HM"
+      },
+
   },
 
 
   "Resources" : {
+
+
+    "RecordSet" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "AliasTarget" :{
+          "DNSName" : { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]},
+          "EvaluateTargetHealth": "false",
+          "HostedZoneId" :  {"Fn::GetAtt": ["LoadBalancer", "CanonicalHostedZoneID"]}
+        },
+        "HostedZoneId" : { "Ref": "HostedZoneID" },
+        "Name" : "www.blackfridaypapai.ga",
+        "Type" : "A"
+      },
+      "DependsOn": [ "LoadBalancer", "TargetGroup" ]
+    },
 
     "LoadBalancer" : {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
@@ -44,8 +59,7 @@
         "Scheme" : "internet-facing",
         "Subnets" : [ {"Ref": "PublicSubnet1"}, {"Ref" : "PublicSubnet2"}],
         "SecurityGroups": [{"Ref": "ALBSecurityGroup"}]
-      },
-      "DependsOn": [ "InternetGateway" ]
+      }
     },
 
     "TargetGroup": {
@@ -73,23 +87,10 @@
           "TargetGroupArn": { "Ref": "TargetGroup" }
         }],
         "LoadBalancerArn": { "Ref": "LoadBalancer" },
-        "Port": 443,
-        "Protocol": "HTTPS",
-        "Certificates": [{"CertificateArn": {"Ref": "CertificateArn2"}}]
+        "Port": 80,
+        "Protocol": "HTTP"
       }
     },
-
-    "ListenerCertificate": {
-            "Type": "AWS::ElasticLoadBalancingV2::ListenerCertificate",
-            "Properties": {
-                "Certificates": [
-                  {
-                    "CertificateArn": {"Ref": "CertificateArn1"}
-                  }
-                ],
-                "ListenerArn": {"Ref": "LoadBalancerListener"}
-            }
-        },
 
     "LaunchConfig" : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
@@ -111,274 +112,211 @@
     "AutoScalingGroup" : {
      "Type" : "AWS::AutoScaling::AutoScalingGroup",
      "Properties" : {
-        "AutoScalingGroupName" : "AutoScalingGroupChallenge2",
-        "VPCZoneIdentifier" : [ {"Ref": "PrivateSubnet1"}, {"Ref" : "PrivateSubnet2"} ],
-        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
-        "MinSize" : "2",
-        "MaxSize" : "4",
-        "DesiredCapacity" : "2",
-        "HealthCheckGracePeriod" : 60,
-        "HealthCheckType": "ELB",
-        "TargetGroupARNs" : [ { "Ref" : "TargetGroup" } ]
+      "AutoScalingGroupName" : "AutoScalingGroupChallenge2",
+      "VPCZoneIdentifier" : [ {"Ref": "PublicSubnet1"}, {"Ref" : "PublicSubnet2"} ],
+      "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+      "MinSize" : "2",
+      "MaxSize" : "4",
+      "DesiredCapacity" : "2",
+      "HealthCheckGracePeriod" : 60,
+      "HealthCheckType": "ELB",
+      "TargetGroupARNs" : [ { "Ref" : "TargetGroup" } ]
     },
     "DependsOn" : "LoadBalancer"
+  },
+
+   "BlackFridayScheduledAction" : {
+    "Type" : "AWS::AutoScaling::ScheduledAction",
+    "Properties" : {
+      "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
+      "DesiredCapacity" : 4,
+      "EndTime" : "2018-11-24T02:15:00Z",
+      "MaxSize" : 5,
+      "MinSize" : 3,
+      "StartTime" : "2018-11-23T01:45:00Z"
+    }
   },
 
     "ScaleUpPolicy" : {
      "Type" : "AWS::AutoScaling::ScalingPolicy",
      "Properties" : {
-        "AdjustmentType" : "ChangeInCapacity",
-        "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-        "Cooldown" : "120",
-        "ScalingAdjustment" : "1"
+      "AdjustmentType" : "ChangeInCapacity",
+      "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
+      "Cooldown" : "120",
+      "ScalingAdjustment" : "1"
     }
   },
 
   "ResponseTimeAlarmHigh": {
    "Type": "AWS::CloudWatch::Alarm",
    "Properties": {
-      "EvaluationPeriods": "1",
-      "Statistic": "Average",
-      "Threshold": "0.05",
-      "AlarmDescription": "Alarm if Target Response Time is 50 miliseconds or higher",
-      "Period": "60",
-      "AlarmActions": [ { "Ref": "ScaleUpPolicy" } ],
-      "Namespace": "AWS/ApplicationELB",
-      "Dimensions": [ {
-       "Name": "AutoScalingGroupName",
-       "Value": { "Ref": "AutoScalingGroup" }
-     } ],
-      "ComparisonOperator": "GreaterThanThreshold",
-      "MetricName": "TargetResponseTime"
+    "EvaluationPeriods": "1",
+    "Statistic": "Average",
+    "Threshold": "0.05",
+    "AlarmDescription": "Alarm if Target Response Time is 50 miliseconds or higher",
+    "Period": "60",
+    "AlarmActions": [ { "Ref": "ScaleUpPolicy" } ],
+    "Namespace": "AWS/ApplicationELB",
+    "Dimensions": [ {
+     "Name": "AutoScalingGroupName",
+     "Value": { "Ref": "AutoScalingGroup" }
+   } ],
+    "ComparisonOperator": "GreaterThanThreshold",
+    "MetricName": "TargetResponseTime"
   }
 },
 
-    "ScaleDownPolicy" : {
-     "Type" : "AWS::AutoScaling::ScalingPolicy",
-     "Properties" : {
-      "AdjustmentType" : "ChangeInCapacity",
-      "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "Cooldown" : "120",
-      "ScalingAdjustment" : "-1"
-    }
+  "ScaleDownPolicy" : {
+   "Type" : "AWS::AutoScaling::ScalingPolicy",
+   "Properties" : {
+    "AdjustmentType" : "ChangeInCapacity",
+    "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
+    "Cooldown" : "120",
+    "ScalingAdjustment" : "-1"
+  }
   },
 
   "ResponseTimeAlarmLow": {
-     "Type": "AWS::CloudWatch::Alarm",
-     "Properties": {
-      "EvaluationPeriods": "1",
-      "Statistic": "Average",
-      "Threshold": "0.02",
-      "AlarmDescription": "Alarm if Target Response Time is 20 miliseconds or lower",
-      "Period": "60",
-      "AlarmActions": [ { "Ref": "ScaleDownPolicy" } ],
-      "Namespace": "AWS/ApplicationELB",
-      "Dimensions": [ {
-       "Name": "AutoScalingGroupName",
-       "Value": { "Ref": "AutoScalingGroup" }
-     } ],
-      "ComparisonOperator": "LessThanThreshold",
-      "MetricName": "TargetResponseTime"
-    }
-  },
-
-
-  "VPC" : {
-     "Type" : "AWS::EC2::VPC",
-     "Properties" : {
-      "CidrBlock" : "10.0.0.0/16",
-      "EnableDnsSupport" : "true",
-      "EnableDnsHostnames" : "true",
-      "InstanceTenancy" : "default"
-    }
-  },
-
-  "PublicSubnet1" : {
-     "Type" : "AWS::EC2::Subnet",
-     "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "MapPublicIpOnLaunch": "true",
-        "CidrBlock" : "10.0.1.0/24",
-        "AvailabilityZone" : "us-east-1a"
-    },
-    "DependsOn" : "VPC"
-  },
-
-  "PublicSubnet2" : {
-     "Type" : "AWS::EC2::Subnet",
-     "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "MapPublicIpOnLaunch": "true",
-        "CidrBlock" : "10.0.2.0/24",
-        "AvailabilityZone" : "us-east-1b"
-    },
-    "DependsOn" : "VPC"
-  },
-
-    "PrivateSubnet1" : {
-       "Type" : "AWS::EC2::Subnet",
-       "Properties" : {
-         "VpcId" : { "Ref" : "VPC" },
-         "MapPublicIpOnLaunch": "false",
-         "CidrBlock" : "10.0.3.0/24",
-         "AvailabilityZone" : "us-east-1a"
-       },
-       "DependsOn" : "VPC"
-    },
-
-    "PrivateSubnet2" : {
-       "Type" : "AWS::EC2::Subnet",
-       "Properties" : {
-          "VpcId" : { "Ref" : "VPC" },
-          "MapPublicIpOnLaunch": "false",
-          "CidrBlock" : "10.0.4.0/24",
-          "AvailabilityZone" : "us-east-1b"
-        },
-        "DependsOn" : "VPC"
-     },
-
-  "ALBSecurityGroup" : {
-    "Type" : "AWS::EC2::SecurityGroup",
-    "Properties" : {
-      "GroupName" : "challengeALB",
-      "GroupDescription" : "Enable SSH access via port 22",
-      "VpcId": {"Ref" : "VPC"},
-      "SecurityGroupIngress" : [ {
-       "IpProtocol": "tcp",
-       "FromPort": "80",
-       "ToPort": "80",
-       "CidrIp": "0.0.0.0/0"
-     } ]
-    },
-    "DependsOn" : "VPC"
-  },
-
-  "AutoScalingEC2SecurityGroup" : {
-    "Type" : "AWS::EC2::SecurityGroup",
-    "Properties" : {
-      "GroupName" : "challengeALBtoEC2",
-      "GroupDescription" : "Enable ALB access to EC2",
-      "VpcId": {"Ref" : "VPC"},
-      "SecurityGroupIngress" : [ 
-        {
-          "IpProtocol" : "tcp",
-          "SourceSecurityGroupId" : { "Ref" : "ALBSecurityGroup"},
-          "FromPort" : "80",
-          "ToPort" : "80"
-        }
-      ]
-    },
-    "DependsOn" : "VPC"
-  },
-
-  "InternetGateway": {
-    "Type": "AWS::EC2::InternetGateway",
-    "Properties": {}
-  },
-
-  "InternetGatewayAttachment": {
-      "Type": "AWS::EC2::VPCGatewayAttachment",
-      "DependsOn" : "VPC",
-      "Properties": {
-       "InternetGatewayId": {"Ref" : "InternetGateway"},
-       "VpcId": {"Ref" : "VPC"}
-     }
-  },
-
-  "RouteTable" : {
-     "Type" : "AWS::EC2::RouteTable",
-     "DependsOn" : "VPC",
-     "Properties" : {
-      "VpcId" : { "Ref" : "VPC" },
-    }
-  },
-
-  "Route1" : {
-     "Type" : "AWS::EC2::Route",
-     "DependsOn" : "InternetGateway",
-     "Properties" : {
-      "RouteTableId" : { "Ref" : "RouteTable" },
-      "DestinationCidrBlock" : "0.0.0.0/0",
-      "GatewayId" : { "Ref" : "InternetGateway" }
-    }
-  },
-
-  "SubnetRouteTableAssociation1" : {
-     "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-     "DependsOn" : "RouteTable",
-     "Properties" : {
-      "SubnetId" : { "Ref" : "PublicSubnet1" },
-      "RouteTableId" : { "Ref" : "RouteTable" }
-    }
-  },
-
-  "SubnetRouteTableAssociation2" : {
-     "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-     "DependsOn" : "RouteTable",
-       "Properties" : {
-        "SubnetId" : { "Ref" : "PublicSubnet2" },
-        "RouteTableId" : { "Ref" : "RouteTable" }
-      }
-    },
-
-  "EIP" : {
-    "Type" : "AWS::EC2::EIP",
-    "Properties" : {
-      "Domain" : "VPC"
-    }
-  },
-
-  "NATGateway" : {
-    "DependsOn" : "InternetGatewayAttachment",
-    "Type" : "AWS::EC2::NatGateway",
-      "Properties" : {
-        "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
-        "SubnetId" : { "Ref" : "PublicSubnet1"},
-      }
-    },
-
-  "RouteTable2" : {
-    "Type" : "AWS::EC2::RouteTable",
-    "DependsOn" : "VPC",
-    "Properties" : {
-      "VpcId" : { "Ref" : "VPC" },
-    }
-  },
-
-  "Route2" : {
-    "Type" : "AWS::EC2::Route",
-    "DependsOn" : "NATGateway",
-    "Properties" : {
-      "RouteTableId" : { "Ref" : "RouteTable2" },
-      "DestinationCidrBlock" : "0.0.0.0/0",
-      "NatGatewayId" : { "Ref" : "NATGateway" }
-    }
-  },
-
-  "SubnetRouteTableAssociation3" : {
-    "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-    "DependsOn" : "RouteTable2",
-    "Properties" : {
-      "SubnetId" : { "Ref" : "PrivateSubnet1" },
-      "RouteTableId" : { "Ref" : "RouteTable2" }
-    }
-  },
-
-  "SubnetRouteTableAssociation4" : {
-    "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-    "DependsOn" : "RouteTable2",
-    "Properties" : {
-      "SubnetId" : { "Ref" : "PrivateSubnet2" },
-      "RouteTableId" : { "Ref" : "RouteTable2" }
-    }
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "EvaluationPeriods": "1",
+    "Statistic": "Average",
+    "Threshold": "0.02",
+    "AlarmDescription": "Alarm if Target Response Time is 20 miliseconds or lower",
+    "Period": "60",
+    "AlarmActions": [ { "Ref": "ScaleDownPolicy" } ],
+    "Namespace": "AWS/ApplicationELB",
+    "Dimensions": [ {
+     "Name": "AutoScalingGroupName",
+     "Value": { "Ref": "AutoScalingGroup" }
+   } ],
+    "ComparisonOperator": "LessThanThreshold",
+    "MetricName": "TargetResponseTime"
   }
-
   },
 
-  "Outputs" : {
-    "URL" : {
-      "Description" : "URL of the website",
-      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]}]]}
-    }
-  } 
+
+"VPC" : {
+ "Type" : "AWS::EC2::VPC",
+ "Properties" : {
+  "CidrBlock" : "10.0.0.0/16",
+  "EnableDnsSupport" : "true",
+  "EnableDnsHostnames" : "true",
+  "InstanceTenancy" : "default"
+}
+},
+
+"PublicSubnet1" : {
+ "Type" : "AWS::EC2::Subnet",
+ "Properties" : {
+  "VpcId" : { "Ref" : "VPC" },
+  "MapPublicIpOnLaunch": "true",
+  "CidrBlock" : "10.0.1.0/24",
+  "AvailabilityZone" : "us-east-1a"
+},
+"DependsOn" : "VPC"
+},
+
+"PublicSubnet2" : {
+ "Type" : "AWS::EC2::Subnet",
+ "Properties" : {
+  "VpcId" : { "Ref" : "VPC" },
+  "MapPublicIpOnLaunch": "true",
+  "CidrBlock" : "10.0.2.0/24",
+  "AvailabilityZone" : "us-east-1b"
+},
+"DependsOn" : "VPC"
+},
+
+"ALBSecurityGroup" : {
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+    "GroupName" : "challengeALB",
+    "GroupDescription" : "Enable SSH access via port 22",
+    "VpcId": {"Ref" : "VPC"},
+    "SecurityGroupIngress" : [ {
+     "IpProtocol": "tcp",
+     "FromPort": "80",
+     "ToPort": "80",
+     "CidrIp": "0.0.0.0/0"
+   } ]
+  },
+  "DependsOn" : "VPC"
+},
+
+"AutoScalingEC2SecurityGroup" : {
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+    "GroupName" : "challengeALBtoEC2",
+    "GroupDescription" : "Enable ALB access to EC2",
+    "VpcId": {"Ref" : "VPC"},
+    "SecurityGroupIngress" : [ 
+      {
+        "IpProtocol" : "tcp",
+        "SourceSecurityGroupId" : { "Ref" : "ALBSecurityGroup"},
+        "FromPort" : "80",
+        "ToPort" : "80"
+      }
+    ]
+  },
+  "DependsOn" : "VPC"
+},
+
+"InternetGateway": {
+  "Type": "AWS::EC2::InternetGateway",
+  "Properties": {}
+},
+
+"InternetGatewayAttachment": {
+  "Type": "AWS::EC2::VPCGatewayAttachment",
+  "DependsOn" : "VPC",
+  "Properties": {
+   "InternetGatewayId": {"Ref" : "InternetGateway"},
+   "VpcId": {"Ref" : "VPC"}
+ }
+},
+
+"RouteTable" : {
+ "Type" : "AWS::EC2::RouteTable",
+ "DependsOn" : "VPC",
+ "Properties" : {
+  "VpcId" : { "Ref" : "VPC" },
+}
+},
+
+"Route1" : {
+ "Type" : "AWS::EC2::Route",
+ "DependsOn" : "InternetGateway",
+ "Properties" : {
+  "RouteTableId" : { "Ref" : "RouteTable" },
+  "DestinationCidrBlock" : "0.0.0.0/0",
+  "GatewayId" : { "Ref" : "InternetGateway" }
+}
+},
+
+"SubnetRouteTableAssociation1" : {
+ "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+ "DependsOn" : "RouteTable",
+ "Properties" : {
+  "SubnetId" : { "Ref" : "PublicSubnet1" },
+  "RouteTableId" : { "Ref" : "RouteTable" }
+}
+},
+
+"SubnetRouteTableAssociation2" : {
+ "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+ "DependsOn" : "RouteTable",
+ "Properties" : {
+  "SubnetId" : { "Ref" : "PublicSubnet2" },
+  "RouteTableId" : { "Ref" : "RouteTable" }
+}
+}
+},
+
+"Outputs" : {
+  "URL" : {
+    "Description" : "URL of the website",
+    "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]}]]}
+  }
+} 
 }
