@@ -71,7 +71,7 @@
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
         "LaunchConfigurationName" : "Auto Scaling Launch Configuration",
-        "ImageId" : "ami-0bf63a0b969bba5e9",
+        "ImageId" : "ami-06abe0f752035395a",
         "SecurityGroups" : [ { "Ref" : "AutoScalingEC2SecurityGroup" } ],
         "InstanceType" : "t2.micro",
         "BlockDeviceMappings" : [ {
