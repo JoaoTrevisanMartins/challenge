@@ -81,7 +81,7 @@
           "DeviceName" : "/dev/sdc",
           "VirtualName" : "ephemeral0"
         } ],
-        "IamInstanceProfile" : {"Ref" : "RootInstanceProfile"}
+        "IamInstanceProfile" : {"Ref" : "InstanceProfile"}
       }
     },
 
@@ -350,7 +350,7 @@
     }
   },
 
-  "RootRole": {
+  "Role": {
     "Type": "AWS::IAM::Role",
     "Properties": {
       "AssumeRolePolicyDocument": {
@@ -464,15 +464,15 @@
                 }
             ]
         },
-        "Roles": [ {"Ref": "RootRole"} ]
+        "Roles": [ {"Ref": "Role"} ]
       }
     },
 
-      "RootInstanceProfile": {
+      "InstanceProfile": {
          "Type": "AWS::IAM::InstanceProfile",
          "Properties": {
             "Path": "/",
-            "Roles": [ {"Ref": "RootRole"} ]
+            "Roles": [ {"Ref": "Role"} ]
          }
       }
   },
