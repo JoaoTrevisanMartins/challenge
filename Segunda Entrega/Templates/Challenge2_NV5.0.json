@@ -51,7 +51,6 @@
           "HostedZoneId" :  {"Fn::GetAtt": ["LoadBalancer", "CanonicalHostedZoneID"]}
         },
         "HostedZoneId" : { "Ref": "HostedZoneID" },
-        "Name" : "www.blackfridaypapai.ga",
         "Name" : { "Fn::Join": [ "", ["www.", {"Ref": "HostedZoneName"} ] ] },
         "Type" : "A"
       },
