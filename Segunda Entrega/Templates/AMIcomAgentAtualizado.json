@@ -4,11 +4,27 @@
   "Parameters" : {
 
     "KeyPair" :{
-      "Description" : "WebServer EC2 instance type",
       "Type" : "String",
-      "Default" : "KeyPair-NorthVirginia"
+      "Default" : "KeyPair-SaoPaulo"
     }
 
+  },
+
+  "Mappings" : {
+    "AMIMap" : {
+      "us-east-1" : { "HVM64" : "ami-013be31976ca2c322"},
+      "sa-east-1" : { "HVM64" : "ami-0160a8b6087883cb6"}
+    },
+
+    "AZMap" : {
+      "us-east-1" : {"AZ" : "us-east-1a"},
+      "sa-east-1" : {"AZ" : "sa-east-1a"}
+    },
+
+    "SubnetsMap" : {
+      "us-east-1" : {"subnet" : "subnet-b7149ed0"},
+      "sa-east-1" : {"subnet" : "subnet-525aa834"}
+    }
   },
 
   "Resources" : {
@@ -17,12 +33,12 @@
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "InstanceType" : "t2.micro",
-        "AvailabilityZone" : "us-east-1a",
+        "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ"]},
         "KeyName" : { "Ref" : "KeyPair" },
         "NetworkInterfaces": [ {    
               "AssociatePublicIpAddress" : "True",
               "DeleteOnTermination" : "True",
-              "SubnetId" : "subnet-b7149ed0",
+              "SubnetId" : { "Fn::FindInMap" : [ "SubnetsMap", { "Ref" : "AWS::Region" }, "subnet"]},
               "DeviceIndex" : "0"
               } ],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
@@ -49,12 +65,12 @@
            "status amazon-ssm-agent\n",
            "start amazon-ssm-agent"
             ] ] } },
-        "IamInstanceProfile" : {"Ref" : "RootInstanceProfile"},
-        "ImageId" : "ami-013be31976ca2c322"
+        "IamInstanceProfile" : {"Ref" : "InstanceProfile"},
+        "ImageId" : { "Fn::FindInMap" : [ "AMIMap", { "Ref" : "AWS::Region" }, "HVM64"]}
       }
     },
 
-    "RootRole": {
+    "Role": {
     "Type": "AWS::IAM::Role",
     "Properties": {
       "AssumeRolePolicyDocument": {
@@ -168,15 +184,15 @@
                 }
             ]
         },
-        "Roles": [ {"Ref": "RootRole"} ]
+        "Roles": [ {"Ref": "Role"} ]
       }
     },
 
-      "RootInstanceProfile": {
+      "InstanceProfile": {
          "Type": "AWS::IAM::InstanceProfile",
          "Properties": {
             "Path": "/",
-            "Roles": [ {"Ref": "RootRole"} ]
+            "Roles": [ {"Ref": "Role"} ]
          }
       }
   }

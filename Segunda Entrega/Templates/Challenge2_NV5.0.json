@@ -27,6 +27,18 @@
 
   },
 
+  	"Mappings" : {
+	  "AMIMap" : {
+	    "us-east-1" : { "HVM64" : "ami-06abe0f752035395a"},
+	    "sa-east-1" : { "HVM64" : "ami-0efbfe6c0d5ea7a01"}
+	  },
+
+	  "AZMap" : {
+	    "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b"},
+        "sa-east-1" : {"AZ1" : "sa-east-1a", "AZ2" : "sa-east-1c"}
+	  }
+	},
+
 
   "Resources" : {
 
@@ -106,7 +118,7 @@
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
         "LaunchConfigurationName" : "Auto Scaling Launch Configuration",
-        "ImageId" : "ami-0bf63a0b969bba5e9",
+        "ImageId" : { "Fn::FindInMap" : [ "AMIMap", { "Ref" : "AWS::Region" }, "HVM64"]},
         "SecurityGroups" : [ { "Ref" : "AutoScalingEC2SecurityGroup" } ],
         "InstanceType" : "t2.micro",
         "BlockDeviceMappings" : [ {
@@ -223,7 +235,7 @@
         "VpcId" : { "Ref" : "VPC" },
         "MapPublicIpOnLaunch": "true",
         "CidrBlock" : "10.0.1.0/24",
-        "AvailabilityZone" : "us-east-1a"
+        "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ1"]}
     },
     "DependsOn" : "VPC"
   },
@@ -234,7 +246,7 @@
         "VpcId" : { "Ref" : "VPC" },
         "MapPublicIpOnLaunch": "true",
         "CidrBlock" : "10.0.2.0/24",
-        "AvailabilityZone" : "us-east-1b"
+        "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ2"]}
     },
     "DependsOn" : "VPC"
   },
@@ -245,7 +257,7 @@
          "VpcId" : { "Ref" : "VPC" },
          "MapPublicIpOnLaunch": "false",
          "CidrBlock" : "10.0.3.0/24",
-         "AvailabilityZone" : "us-east-1a"
+         "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ1"]}
        },
        "DependsOn" : "VPC"
     },
@@ -256,7 +268,7 @@
           "VpcId" : { "Ref" : "VPC" },
           "MapPublicIpOnLaunch": "false",
           "CidrBlock" : "10.0.4.0/24",
-          "AvailabilityZone" : "us-east-1b"
+          "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ2"]}
         },
         "DependsOn" : "VPC"
      },
@@ -320,13 +332,13 @@
      "Type" : "AWS::EC2::RouteTable",
      "DependsOn" : "VPC",
      "Properties" : {
-      "VpcId" : { "Ref" : "VPC" },
+      "VpcId" : { "Ref" : "VPC" }
     }
   },
 
   "Route1" : {
      "Type" : "AWS::EC2::Route",
-     "DependsOn" : "InternetGateway",
+     "DependsOn" : ["InternetGateway", "InternetGatewayAttachment"],
      "Properties" : {
       "RouteTableId" : { "Ref" : "RouteTable" },
       "DestinationCidrBlock" : "0.0.0.0/0",
@@ -364,7 +376,7 @@
     "Type" : "AWS::EC2::NatGateway",
       "Properties" : {
         "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
-        "SubnetId" : { "Ref" : "PublicSubnet1"},
+        "SubnetId" : { "Ref" : "PublicSubnet1"}
       }
     },
 
@@ -372,7 +384,7 @@
     "Type" : "AWS::EC2::RouteTable",
     "DependsOn" : "VPC",
     "Properties" : {
-      "VpcId" : { "Ref" : "VPC" },
+      "VpcId" : { "Ref" : "VPC" }
     }
   },
 
