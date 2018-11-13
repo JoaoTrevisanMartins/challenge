@@ -5,42 +5,30 @@
 
   "Parameters" : {
 
-    "SSHLocation" : {
-      "Description" : "The IP address range that can be used to SSH to the EC2 instances",
-      "Type": "String",
-      "MinLength": "9",
-      "MaxLength": "18",
-      "Default": "0.0.0.0/0",
-      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-    },
-
     "KeyPair" :{
-      "Description" : "WebServer EC2 instance type",
       "Type" : "String",
       "Default" : "KeyPair-NorthVirginia"
     },
 
-       "HostedZoneName" : {
+    "HostedZoneName" : {
        "Type" : "String",
        "Default" : "blackfridaypapai.ga"
-      },
+    },
 
-      "HostedZoneID" : {
-       "Type" : "String",
-       "Default" : "Z2704ULUAWB6HM"
-      },
+    "HostedZoneID" : {
+      "Type" : "String",
+      "Default" : "Z2704ULUAWB6HM"
+    },
 
-      "ListenerCertificateARN" : {
-       "Type" : "String",
-       "Default" : "arn:aws:acm:us-east-1:268174554982:certificate/84c54a37-06bc-4410-94d8-e470ea4d3fa1"
-      }
+    "ListenerCertificateARN" : {
+      "Type" : "String",
+      "Default" : "arn:aws:acm:us-east-1:268174554982:certificate/84c54a37-06bc-4410-94d8-e470ea4d3fa1"
+    }
 
   },
 
 
   "Resources" : {
-
 
     "RecordSet" : {
       "Type" : "AWS::Route53::RecordSet",
@@ -52,6 +40,7 @@
         },
         "HostedZoneId" : { "Ref": "HostedZoneID" },
         "Name" : "www.blackfridaypapai.ga",
+        "Name" : { "Fn::Join": [ "", ["www.", {"Ref": "HostedZoneName"} ] ] },
         "Type" : "A"
       },
       "DependsOn": [ "LoadBalancer", "TargetGroup" ]
@@ -126,7 +115,8 @@
         }, {
           "DeviceName" : "/dev/sdc",
           "VirtualName" : "ephemeral0"
-        } ]
+        } ],
+        "IamInstanceProfile" : {"Ref" : "InstanceProfile"}
       }
     },
 
@@ -412,7 +402,133 @@
       "SubnetId" : { "Ref" : "PrivateSubnet2" },
       "RouteTableId" : { "Ref" : "RouteTable2" }
     }
-  }
+  },
+
+  "Role": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "ec2.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          } ]
+            },
+            "Path": "/"
+         }
+      },
+
+  "RolePolicies": {
+     "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "root",
+        "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ssm:DescribeAssociation",
+                        "ssm:GetDeployablePatchSnapshotForInstance",
+                        "ssm:GetDocument",
+                        "ssm:GetManifest",
+                        "ssm:GetParameters",
+                        "ssm:ListAssociations",
+                        "ssm:ListInstanceAssociations",
+                        "ssm:PutInventory",
+                        "ssm:PutComplianceItems",
+                        "ssm:PutConfigurePackageResult",
+                        "ssm:UpdateAssociationStatus",
+                        "ssm:UpdateInstanceAssociationStatus",
+                        "ssm:UpdateInstanceInformation"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ssmmessages:CreateControlChannel",
+                        "ssmmessages:CreateDataChannel",
+                        "ssmmessages:OpenControlChannel",
+                        "ssmmessages:OpenDataChannel"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ec2messages:AcknowledgeMessage",
+                        "ec2messages:DeleteMessage",
+                        "ec2messages:FailMessage",
+                        "ec2messages:GetEndpoint",
+                        "ec2messages:GetMessages",
+                        "ec2messages:SendReply"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "cloudwatch:PutMetricData"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ec2:DescribeInstanceStatus"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ds:CreateComputer",
+                        "ds:DescribeDirectories"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:DescribeLogGroups",
+                        "logs:DescribeLogStreams",
+                        "logs:PutLogEvents"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetBucketLocation",
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:GetEncryptionConfiguration",
+                        "s3:AbortMultipartUpload",
+                        "s3:ListMultipartUploadParts",
+                        "s3:ListBucket",
+                        "s3:ListBucketMultipartUploads"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        },
+        "Roles": [ {"Ref": "Role"} ]
+      }
+    },
+
+      "InstanceProfile": {
+         "Type": "AWS::IAM::InstanceProfile",
+         "Properties": {
+            "Path": "/",
+            "Roles": [ {"Ref": "Role"} ]
+         }
+      }
 
   },
 
