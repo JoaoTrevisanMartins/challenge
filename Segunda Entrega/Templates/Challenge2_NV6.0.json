@@ -175,18 +175,18 @@
    "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "100",
-      "Unit" : "Milliseconds",
-      "AlarmDescription": "Alarm if Target Response Time is 100 miliseconds or higher",
+      "Threshold": "15000000",
+      "Unit" : "Bytes",
+      "AlarmDescription": "Alarm if NaetworkOut is 15M or higher",
       "Period": "60",
       "AlarmActions": [ { "Ref": "ScaleUpPolicy" } ],
-      "Namespace": "AWS/ApplicationELB",
+      "Namespace": "AWS/EC2",
       "Dimensions": [ {
        "Name": "AutoScalingGroupName",
        "Value": { "Ref": "AutoScalingGroup" }
      } ],
       "ComparisonOperator": "GreaterThanThreshold",
-      "MetricName": "TargetResponseTime"
+      "MetricName": "NetworkOut"
   }
 },
 
@@ -205,18 +205,18 @@
      "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "30",
-      "Unit" : "Milliseconds",
-      "AlarmDescription": "Alarm if Target Response Time is 30 miliseconds or lower",
+      "Threshold": "7000000",
+      "Unit" : "Bytes",
+      "AlarmDescription": "Alarm if NaetworkOut is 7M or lower",
       "Period": "60",
       "AlarmActions": [ { "Ref": "ScaleDownPolicy" } ],
-      "Namespace": "AWS/ApplicationELB",
+      "Namespace": "AWS/EC2",
       "Dimensions": [ {
        "Name": "AutoScalingGroupName",
        "Value": { "Ref": "AutoScalingGroup" }
      } ],
       "ComparisonOperator": "LessThanThreshold",
-      "MetricName": "TargetResponseTime"
+      "MetricName": "NetworkOut"
     }
   },
 
