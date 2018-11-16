@@ -7,22 +7,22 @@
 
     "KeyPair" :{
       "Type" : "String",
-      "Default" : "KeyPair-NorthVirginia"
+      "Default" : "KeyPair-SaoPaulo"
     },
 
     "HostedZoneName" : {
        "Type" : "String",
-       "Default" : "blackfridaypapai.ga"
+       "Default" : "papaitaki.ml"
     },
 
     "HostedZoneID" : {
       "Type" : "String",
-      "Default" : "Z2704ULUAWB6HM"
+      "Default" : "ZRYYTAQLTXOAH"
     },
 
     "ListenerCertificateARN" : {
       "Type" : "String",
-      "Default" : "arn:aws:acm:us-east-1:268174554982:certificate/84c54a37-06bc-4410-94d8-e470ea4d3fa1"
+      "Default" : "arn:aws:acm:sa-east-1:075204848977:certificate/5dd27333-2898-479e-b010-a7fa86914b14"
     }
 
   },
