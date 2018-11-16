@@ -138,7 +138,7 @@
         "VPCZoneIdentifier" : [ {"Ref": "PrivateSubnet1"}, {"Ref" : "PrivateSubnet2"} ],
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : "2",
-        "MaxSize" : "4",
+        "MaxSize" : "20",
         "Cooldown" : "90",
         "DesiredCapacity" : "2",
         "HealthCheckGracePeriod" : 60,
@@ -170,7 +170,7 @@
     }
   },
 
-  "ResponseTimeAlarmHigh": {
+  "NetworkOutHigh": {
    "Type": "AWS::CloudWatch::Alarm",
    "Properties": {
       "EvaluationPeriods": "1",
@@ -200,7 +200,7 @@
     }
   },
 
-  "ResponseTimeAlarmLow": {
+  "NetworkOutLow": {
      "Type": "AWS::CloudWatch::Alarm",
      "Properties": {
       "EvaluationPeriods": "1",
