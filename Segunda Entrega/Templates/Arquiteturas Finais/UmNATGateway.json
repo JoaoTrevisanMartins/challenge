@@ -35,10 +35,9 @@
 
 	  "AZMap" : {
 	    "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b"},
-        "sa-east-1" : {"AZ1" : "sa-east-1a", "AZ2" : "sa-east-1c"}
+      "sa-east-1" : {"AZ1" : "sa-east-1a", "AZ2" : "sa-east-1c"}
 	  }
 	},
-
 
   "Resources" : {
 

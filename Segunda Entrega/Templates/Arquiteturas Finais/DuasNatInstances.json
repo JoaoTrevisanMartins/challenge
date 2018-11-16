@@ -27,15 +27,15 @@
   },
 
   "Mappings" : {
-    "AMIMap" : {
-      "us-east-1" : { "HVM64" : "ami-06abe0f752035395a"},
-      "sa-east-1" : { "HVM64" : "ami-0efbfe6c0d5ea7a01"}
-    },
+	  "AMIMap" : {
+	    "us-east-1" : { "HVM64" : "ami-06abe0f752035395a"},
+	    "sa-east-1" : { "HVM64" : "ami-0efbfe6c0d5ea7a01"}
+	  },
 
-    "AZMap" : {
-      "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b"},
+	"AZMap" : {
+	  "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b"},
       "sa-east-1" : {"AZ1" : "sa-east-1a", "AZ2" : "sa-east-1c"}
-    },
+	},
 
     "NATMap" : {
       "us-east-1" : { "HVM64" : "ami-68a75915"},
@@ -132,7 +132,8 @@
           "VirtualName" : "ephemeral0"
         } ],
         "IamInstanceProfile" : {"Ref" : "InstanceProfile"}
-      }
+      },
+      "DependsOn" : "InstanceProfile"
     },
 
     "AutoScalingGroup" : {
