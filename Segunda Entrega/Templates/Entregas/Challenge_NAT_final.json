@@ -152,10 +152,10 @@
     "Type" : "AWS::AutoScaling::ScheduledAction",
     "Properties" : {
       "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "DesiredCapacity" : 4,
+      "DesiredCapacity" : 5,
       "EndTime" : "2018-11-24T02:15:00Z",
       "MaxSize" : 10,
-      "MinSize" : 5,
+      "MinSize" : 4,
       "StartTime" : "2018-11-23T01:45:00Z"
     }
   },

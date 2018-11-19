@@ -119,7 +119,7 @@
         "LaunchConfigurationName" : "Auto Scaling Launch Configuration",
         "ImageId" : { "Fn::FindInMap" : [ "AMIMap", { "Ref" : "AWS::Region" }, "HVM64"]},
         "SecurityGroups" : [ { "Ref" : "AutoScalingEC2SecurityGroup" } ],
-        "InstanceType" : "t3.micro",
+        "InstanceType" : "t2.micro",
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sdk",
           "Ebs" : {"VolumeSize" : "8"}
@@ -139,7 +139,6 @@
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : "2",
         "MaxSize" : "4",
-        "Cooldown" : "70",
         "DesiredCapacity" : "2",
         "HealthCheckGracePeriod" : 60,
         "HealthCheckType": "ELB",
@@ -152,10 +151,10 @@
     "Type" : "AWS::AutoScaling::ScheduledAction",
     "Properties" : {
       "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "DesiredCapacity" : 5,
+      "DesiredCapacity" : 4,
       "EndTime" : "2018-11-24T02:15:00Z",
-      "MaxSize" : 10,
-      "MinSize" : 4,
+      "MaxSize" : 5,
+      "MinSize" : 3,
       "StartTime" : "2018-11-23T01:45:00Z"
     }
   },
@@ -170,23 +169,22 @@
     }
   },
 
-  "NetworkOutHigh": {
+  "ResponseTimeAlarmHigh": {
    "Type": "AWS::CloudWatch::Alarm",
    "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "7000000",
-      "Unit" : "Bytes",
-      "AlarmDescription": "Alarm if NaetworkOut is 15M or higher",
+      "Threshold": "0.05",
+      "AlarmDescription": "Alarm if Target Response Time is 50 miliseconds or higher",
       "Period": "60",
       "AlarmActions": [ { "Ref": "ScaleUpPolicy" } ],
-      "Namespace": "AWS/EC2",
+      "Namespace": "AWS/ApplicationELB",
       "Dimensions": [ {
        "Name": "AutoScalingGroupName",
        "Value": { "Ref": "AutoScalingGroup" }
      } ],
       "ComparisonOperator": "GreaterThanThreshold",
-      "MetricName": "NetworkOut"
+      "MetricName": "TargetResponseTime"
   }
 },
 
@@ -200,23 +198,22 @@
     }
   },
 
-  "NetworkOutLow": {
+  "ResponseTimeAlarmLow": {
      "Type": "AWS::CloudWatch::Alarm",
      "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "4000000",
-      "Unit" : "Bytes",
-      "AlarmDescription": "Alarm if NaetworkOut is 7M or lower",
+      "Threshold": "0.02",
+      "AlarmDescription": "Alarm if Target Response Time is 20 miliseconds or lower",
       "Period": "60",
       "AlarmActions": [ { "Ref": "ScaleDownPolicy" } ],
-      "Namespace": "AWS/EC2",
+      "Namespace": "AWS/ApplicationELB",
       "Dimensions": [ {
        "Name": "AutoScalingGroupName",
        "Value": { "Ref": "AutoScalingGroup" }
      } ],
       "ComparisonOperator": "LessThanThreshold",
-      "MetricName": "NetworkOut"
+      "MetricName": "TargetResponseTime"
     }
   },
 
@@ -252,6 +249,28 @@
     },
     "DependsOn" : "VPC"
   },
+
+    "PrivateSubnet1" : {
+       "Type" : "AWS::EC2::Subnet",
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "MapPublicIpOnLaunch": "false",
+         "CidrBlock" : "10.0.3.0/24",
+         "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ1"]}
+       },
+       "DependsOn" : "VPC"
+    },
+
+    "PrivateSubnet2" : {
+       "Type" : "AWS::EC2::Subnet",
+       "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "MapPublicIpOnLaunch": "false",
+          "CidrBlock" : "10.0.4.0/24",
+          "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ2"]}
+        },
+        "DependsOn" : "VPC"
+     },
 
   "ALBSecurityGroup" : {
     "Type" : "AWS::EC2::SecurityGroup",
@@ -343,6 +362,58 @@
         "RouteTableId" : { "Ref" : "RouteTable" }
       }
     },
+
+  "EIP" : {
+    "Type" : "AWS::EC2::EIP",
+    "Properties" : {
+      "Domain" : "VPC"
+    }
+  },
+
+  "NATGateway" : {
+    "DependsOn" : "InternetGatewayAttachment",
+    "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+        "SubnetId" : { "Ref" : "PublicSubnet1"}
+      }
+    },
+
+  "RouteTable2" : {
+    "Type" : "AWS::EC2::RouteTable",
+    "DependsOn" : "VPC",
+    "Properties" : {
+      "VpcId" : { "Ref" : "VPC" }
+    }
+  },
+
+  "Route2" : {
+    "Type" : "AWS::EC2::Route",
+    "DependsOn" : "NATGateway",
+    "Properties" : {
+      "RouteTableId" : { "Ref" : "RouteTable2" },
+      "DestinationCidrBlock" : "0.0.0.0/0",
+      "NatGatewayId" : { "Ref" : "NATGateway" }
+    }
+  },
+
+  "SubnetRouteTableAssociation3" : {
+    "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+    "DependsOn" : "RouteTable2",
+    "Properties" : {
+      "SubnetId" : { "Ref" : "PrivateSubnet1" },
+      "RouteTableId" : { "Ref" : "RouteTable2" }
+    }
+  },
+
+  "SubnetRouteTableAssociation4" : {
+    "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+    "DependsOn" : "RouteTable2",
+    "Properties" : {
+      "SubnetId" : { "Ref" : "PrivateSubnet2" },
+      "RouteTableId" : { "Ref" : "RouteTable2" }
+    }
+  },
 
   "Role": {
     "Type": "AWS::IAM::Role",
