@@ -371,19 +371,35 @@
       }
     },
 
-  "EIP" : {
+  "EIP1" : {
     "Type" : "AWS::EC2::EIP",
     "Properties" : {
       "Domain" : "VPC"
     }
   },
 
-  "NATGateway" : {
+  "EIP2" : {
+    "Type" : "AWS::EC2::EIP",
+    "Properties" : {
+      "Domain" : "VPC"
+    }
+  },
+
+  "NATGateway1" : {
     "DependsOn" : "InternetGatewayAttachment",
     "Type" : "AWS::EC2::NatGateway",
       "Properties" : {
-        "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+        "AllocationId" : { "Fn::GetAtt" : ["EIP1", "AllocationId"]},
         "SubnetId" : { "Ref" : "PublicSubnet1"}
+      }
+    },
+
+  "NATGateway2" : {
+    "DependsOn" : "InternetGatewayAttachment",
+    "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : ["EIP2", "AllocationId"]},
+        "SubnetId" : { "Ref" : "PublicSubnet2"}
       }
     },
 
@@ -395,13 +411,31 @@
     }
   },
 
+  "RouteTable3" : {
+    "Type" : "AWS::EC2::RouteTable",
+    "DependsOn" : "VPC",
+    "Properties" : {
+      "VpcId" : { "Ref" : "VPC" }
+    }
+  },
+
   "Route2" : {
     "Type" : "AWS::EC2::Route",
-    "DependsOn" : "NATGateway",
+    "DependsOn" : "NATGateway1",
     "Properties" : {
       "RouteTableId" : { "Ref" : "RouteTable2" },
       "DestinationCidrBlock" : "0.0.0.0/0",
-      "NatGatewayId" : { "Ref" : "NATGateway" }
+      "NatGatewayId" : { "Ref" : "NATGateway1" }
+    }
+  },
+
+  "Route3" : {
+    "Type" : "AWS::EC2::Route",
+    "DependsOn" : "NATGateway2",
+    "Properties" : {
+      "RouteTableId" : { "Ref" : "RouteTable3" },
+      "DestinationCidrBlock" : "0.0.0.0/0",
+      "NatGatewayId" : { "Ref" : "NATGateway2" }
     }
   },
 
@@ -419,7 +453,7 @@
     "DependsOn" : "RouteTable2",
     "Properties" : {
       "SubnetId" : { "Ref" : "PrivateSubnet2" },
-      "RouteTableId" : { "Ref" : "RouteTable2" }
+      "RouteTableId" : { "Ref" : "RouteTable3" }
     }
   },
 
