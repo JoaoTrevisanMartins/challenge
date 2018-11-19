@@ -1,0 +1,19 @@
+Your Estimate
+Service Type,Components,Region,Component Price,Service Price
+Amazon EC2 Service (US East (N. Virginia)),,,,$15.24
+,Compute:,US East (N. Virginia),$15.24
+Amazon Route 53 Service,,,,$0.51
+,Hosted Zones:,Global,$0.5
+,Standard Queries:,Global,$0.01
+Amazon Elastic Load Balancing (US East (N. Virginia)),,,,$16.47
+,Application LBs:,US East (N. Virginia),$16.47
+Amazon CloudWatch Service (US East (N. Virginia)),,,,$0
+,Standard Alarms:,US East (N. Virginia),$0
+Amazon VPC Service (US East (N. Virginia)),,,,$65.88
+,NAT Gateway,US East (N. Virginia),$65.88
+AWS Data Transfer Out,,,,$0
+,US East (N. Virginia) Region:,Global,$0
+AWS Support (Basic),,,,$0
+,Support for all AWS services:,,$0
+,,Free Tier Discount:,,$-16.47
+,,Total Monthly Payment:,,$81.63

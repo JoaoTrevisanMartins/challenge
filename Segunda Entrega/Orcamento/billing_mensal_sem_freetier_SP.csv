@@ -1,0 +1,18 @@
+Your Estimate
+Service Type,Components,Region,Component Price,Service Price
+Amazon EC2 Service (South America (Sao Paulo)),,,,$27.24
+,Compute:,South America (Sao Paulo),$27.24
+Amazon Route 53 Service,,,,$0.5
+,Hosted Zones:,Global,$0.5
+,Standard Queries:,Global,$0
+Amazon Elastic Load Balancing (South America (Sao Paulo)),,,,$24.89
+,Application LBs:,South America (Sao Paulo),$24.89
+Amazon CloudWatch Service (South America (Sao Paulo)),,,,$0
+,Standard Alarms:,South America (Sao Paulo),$0
+Amazon VPC Service (South America (Sao Paulo)),,,,$136.16
+,NAT Gateway,South America (Sao Paulo),$136.16
+AWS Data Transfer Out,,,,$0
+,South America (Sao Paulo) Region:,Global,$0
+AWS Support (Basic),,,,$0
+,Support for all AWS services:,,$0
+,,Total Monthly Payment:,,$188.79

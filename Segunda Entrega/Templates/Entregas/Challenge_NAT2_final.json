@@ -7,22 +7,22 @@
 
     "KeyPair" :{
       "Type" : "String",
-      "Default" : "KeyPair-SaoPaulo"
+      "Default" : "KeyPair-NorthVirginia"
     },
 
     "HostedZoneName" : {
        "Type" : "String",
-       "Default" : "papaitaki.ml"
+       "Default" : "blackfridaypapai.ga"
     },
 
     "HostedZoneID" : {
       "Type" : "String",
-      "Default" : "ZRYYTAQLTXOAH"
+      "Default" : "Z2704ULUAWB6HM"
     },
 
     "ListenerCertificateARN" : {
       "Type" : "String",
-      "Default" : "arn:aws:acm:sa-east-1:075204848977:certificate/5dd27333-2898-479e-b010-a7fa86914b14"
+      "Default" : "arn:aws:acm:us-east-1:268174554982:certificate/84c54a37-06bc-4410-94d8-e470ea4d3fa1"
     }
 
   },
@@ -119,7 +119,7 @@
         "LaunchConfigurationName" : "Auto Scaling Launch Configuration",
         "ImageId" : { "Fn::FindInMap" : [ "AMIMap", { "Ref" : "AWS::Region" }, "HVM64"]},
         "SecurityGroups" : [ { "Ref" : "AutoScalingEC2SecurityGroup" } ],
-        "InstanceType" : "t2.micro",
+        "InstanceType" : "t3.micro",
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sdk",
           "Ebs" : {"VolumeSize" : "8"}
@@ -139,6 +139,7 @@
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : "2",
         "MaxSize" : "4",
+        "Cooldown" : "70",
         "DesiredCapacity" : "2",
         "HealthCheckGracePeriod" : 60,
         "HealthCheckType": "ELB",
@@ -151,10 +152,10 @@
     "Type" : "AWS::AutoScaling::ScheduledAction",
     "Properties" : {
       "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "DesiredCapacity" : 4,
+      "DesiredCapacity" : 5,
       "EndTime" : "2018-11-24T02:15:00Z",
-      "MaxSize" : 5,
-      "MinSize" : 3,
+      "MaxSize" : 10,
+      "MinSize" : 4,
       "StartTime" : "2018-11-23T01:45:00Z"
     }
   },
@@ -169,22 +170,23 @@
     }
   },
 
-  "ResponseTimeAlarmHigh": {
+  "NetworkOutHigh": {
    "Type": "AWS::CloudWatch::Alarm",
    "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "0.05",
-      "AlarmDescription": "Alarm if Target Response Time is 50 miliseconds or higher",
+      "Threshold": "7000000",
+      "Unit" : "Bytes",
+      "AlarmDescription": "Alarm if NaetworkOut is 15M or higher",
       "Period": "60",
       "AlarmActions": [ { "Ref": "ScaleUpPolicy" } ],
-      "Namespace": "AWS/ApplicationELB",
+      "Namespace": "AWS/EC2",
       "Dimensions": [ {
        "Name": "AutoScalingGroupName",
        "Value": { "Ref": "AutoScalingGroup" }
      } ],
       "ComparisonOperator": "GreaterThanThreshold",
-      "MetricName": "TargetResponseTime"
+      "MetricName": "NetworkOut"
   }
 },
 
@@ -198,25 +200,25 @@
     }
   },
 
-  "ResponseTimeAlarmLow": {
+  "NetworkOutLow": {
      "Type": "AWS::CloudWatch::Alarm",
      "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "0.02",
-      "AlarmDescription": "Alarm if Target Response Time is 20 miliseconds or lower",
+      "Threshold": "4000000",
+      "Unit" : "Bytes",
+      "AlarmDescription": "Alarm if NaetworkOut is 7M or lower",
       "Period": "60",
       "AlarmActions": [ { "Ref": "ScaleDownPolicy" } ],
-      "Namespace": "AWS/ApplicationELB",
+      "Namespace": "AWS/EC2",
       "Dimensions": [ {
        "Name": "AutoScalingGroupName",
        "Value": { "Ref": "AutoScalingGroup" }
      } ],
       "ComparisonOperator": "LessThanThreshold",
-      "MetricName": "TargetResponseTime"
+      "MetricName": "NetworkOut"
     }
   },
-
 
   "VPC" : {
      "Type" : "AWS::EC2::VPC",
@@ -363,19 +365,35 @@
       }
     },
 
-  "EIP" : {
+  "EIP1" : {
     "Type" : "AWS::EC2::EIP",
     "Properties" : {
       "Domain" : "VPC"
     }
   },
 
-  "NATGateway" : {
+  "EIP2" : {
+    "Type" : "AWS::EC2::EIP",
+    "Properties" : {
+      "Domain" : "VPC"
+    }
+  },
+
+  "NATGateway1" : {
     "DependsOn" : "InternetGatewayAttachment",
     "Type" : "AWS::EC2::NatGateway",
       "Properties" : {
-        "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+        "AllocationId" : { "Fn::GetAtt" : ["EIP1", "AllocationId"]},
         "SubnetId" : { "Ref" : "PublicSubnet1"}
+      }
+    },
+
+  "NATGateway2" : {
+    "DependsOn" : "InternetGatewayAttachment",
+    "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : ["EIP2", "AllocationId"]},
+        "SubnetId" : { "Ref" : "PublicSubnet2"}
       }
     },
 
@@ -387,13 +405,31 @@
     }
   },
 
+  "RouteTable3" : {
+    "Type" : "AWS::EC2::RouteTable",
+    "DependsOn" : "VPC",
+    "Properties" : {
+      "VpcId" : { "Ref" : "VPC" }
+    }
+  },
+
   "Route2" : {
     "Type" : "AWS::EC2::Route",
-    "DependsOn" : "NATGateway",
+    "DependsOn" : "NATGateway1",
     "Properties" : {
       "RouteTableId" : { "Ref" : "RouteTable2" },
       "DestinationCidrBlock" : "0.0.0.0/0",
-      "NatGatewayId" : { "Ref" : "NATGateway" }
+      "NatGatewayId" : { "Ref" : "NATGateway1" }
+    }
+  },
+
+  "Route3" : {
+    "Type" : "AWS::EC2::Route",
+    "DependsOn" : "NATGateway2",
+    "Properties" : {
+      "RouteTableId" : { "Ref" : "RouteTable3" },
+      "DestinationCidrBlock" : "0.0.0.0/0",
+      "NatGatewayId" : { "Ref" : "NATGateway2" }
     }
   },
 
@@ -411,7 +447,7 @@
     "DependsOn" : "RouteTable2",
     "Properties" : {
       "SubnetId" : { "Ref" : "PrivateSubnet2" },
-      "RouteTableId" : { "Ref" : "RouteTable2" }
+      "RouteTableId" : { "Ref" : "RouteTable3" }
     }
   },
 

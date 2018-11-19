@@ -1,0 +1,19 @@
+BILLING TOTAL
+
+- North Virginia
+
+	- 2 Públicas: U$17.73
+	- 2 NAT Gateway: U$81.41
+	(U$2.50 por 10 instâncias EC2 durante o dia da Black Friday)
+	APÓS A BLACK FRIDAY
+	- U$81.63 mensal com free tier
+	- U$98.10 mensal sem free tier
+
+- São Paulo
+
+	- 2 Públicas: U$13.39
+	- 2 NAT Gateway: U$145.01
+	(U$0.03 por 10 instâncias EC2 durante o dia da Black Friday)
+	APÓS A BLACK FRIDAY
+	- U$149.95 mensal com free tier
+	- U$188.79 mensal sem free tier
