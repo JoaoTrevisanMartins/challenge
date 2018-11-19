@@ -1,3 +1,4 @@
+Permitir no Security Group da instancia Vegeta as portas 22 e 80
 acessar a instância "Vegeta" (mudar no commando SSH root por ec2-user)
 por meio do comando "vim test.sh" acessar o arquivo para mudar os parametros (para editar pressione i e depois crtl + C)
 após as alterações digitar ":wq" para salvar e sair do arquivo
