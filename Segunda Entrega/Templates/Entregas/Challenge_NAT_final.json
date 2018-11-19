@@ -7,22 +7,22 @@
 
     "KeyPair" :{
       "Type" : "String",
-      "Default" : "KeyPair-NorthVirginia"
+      "Default" : "KeyPair-SaoPaulo"
     },
 
     "HostedZoneName" : {
        "Type" : "String",
-       "Default" : "blackfridaypapai.ga"
+       "Default" : "papaitaki.ml"
     },
 
     "HostedZoneID" : {
       "Type" : "String",
-      "Default" : "Z2704ULUAWB6HM"
+      "Default" : "ZRYYTAQLTXOAH"
     },
 
     "ListenerCertificateARN" : {
       "Type" : "String",
-      "Default" : "arn:aws:acm:us-east-1:268174554982:certificate/84c54a37-06bc-4410-94d8-e470ea4d3fa1"
+      "Default" : "arn:aws:acm:sa-east-1:075204848977:certificate/5dd27333-2898-479e-b010-a7fa86914b14"
     }
 
   },
@@ -36,7 +36,12 @@
 	  "AZMap" : {
 	    "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b"},
         "sa-east-1" : {"AZ1" : "sa-east-1a", "AZ2" : "sa-east-1c"}
-	  }
+	  },
+
+	  "InstanceSize" :{
+	  	"us-east-1" : {"size" : "t3.micro"},
+	  	"sa-east-1" : {"size" : "t2.micro"}
+	  }	  
 	},
 
 
@@ -119,7 +124,7 @@
         "LaunchConfigurationName" : "Auto Scaling Launch Configuration",
         "ImageId" : { "Fn::FindInMap" : [ "AMIMap", { "Ref" : "AWS::Region" }, "HVM64"]},
         "SecurityGroups" : [ { "Ref" : "AutoScalingEC2SecurityGroup" } ],
-        "InstanceType" : "t3.micro",
+        "InstanceType" : { "Fn::FindInMap" : [ "InstanceSize", { "Ref" : "AWS::Region" }, "size"]},
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sdk",
           "Ebs" : {"VolumeSize" : "8"}
@@ -152,10 +157,10 @@
     "Type" : "AWS::AutoScaling::ScheduledAction",
     "Properties" : {
       "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "DesiredCapacity" : 4,
+      "DesiredCapacity" : 5,
       "EndTime" : "2018-11-24T02:15:00Z",
       "MaxSize" : 10,
-      "MinSize" : 5,
+      "MinSize" : 4,
       "StartTime" : "2018-11-23T01:45:00Z"
     }
   },
