@@ -119,7 +119,7 @@
         "LaunchConfigurationName" : "Auto Scaling Launch Configuration",
         "ImageId" : { "Fn::FindInMap" : [ "AMIMap", { "Ref" : "AWS::Region" }, "HVM64"]},
         "SecurityGroups" : [ { "Ref" : "AutoScalingEC2SecurityGroup" } ],
-        "InstanceType" : "t2.micro",
+        "InstanceType" : "t3.micro",
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sdk",
           "Ebs" : {"VolumeSize" : "8"}
@@ -137,10 +137,10 @@
         "AutoScalingGroupName" : "AutoScalingGroupChallenge2",
         "VPCZoneIdentifier" : [ {"Ref": "PrivateSubnet1"}, {"Ref" : "PrivateSubnet2"} ],
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
-        "MinSize" : "2",
+        "MinSize" : "4",
         "MaxSize" : "20",
-        "Cooldown" : "90",
-        "DesiredCapacity" : "2",
+        "Cooldown" : "70",
+        "DesiredCapacity" : "5",
         "HealthCheckGracePeriod" : 60,
         "HealthCheckType": "ELB",
         "TargetGroupARNs" : [ { "Ref" : "TargetGroup" } ]
@@ -165,7 +165,7 @@
      "Properties" : {
         "AdjustmentType" : "ChangeInCapacity",
         "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-        "Cooldown" : "120",
+        "Cooldown" : "70",
         "ScalingAdjustment" : "1"
     }
   },
@@ -175,7 +175,7 @@
    "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "15000000",
+      "Threshold": "7000000",
       "Unit" : "Bytes",
       "AlarmDescription": "Alarm if NaetworkOut is 15M or higher",
       "Period": "60",
@@ -195,7 +195,7 @@
      "Properties" : {
       "AdjustmentType" : "ChangeInCapacity",
       "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "Cooldown" : "120",
+      "Cooldown" : "70",
       "ScalingAdjustment" : "-1"
     }
   },
@@ -205,7 +205,7 @@
      "Properties": {
       "EvaluationPeriods": "1",
       "Statistic": "Average",
-      "Threshold": "7000000",
+      "Threshold": "4000000",
       "Unit" : "Bytes",
       "AlarmDescription": "Alarm if NaetworkOut is 7M or lower",
       "Period": "60",
