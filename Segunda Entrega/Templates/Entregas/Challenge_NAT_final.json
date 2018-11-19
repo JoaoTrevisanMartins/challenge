@@ -7,22 +7,22 @@
 
     "KeyPair" :{
       "Type" : "String",
-      "Default" : "KeyPair-SaoPaulo"
+      "Default" : "KeyPair-NorthVirginia"
     },
 
     "HostedZoneName" : {
        "Type" : "String",
-       "Default" : "papaitaki.ml"
+       "Default" : "blackfridaypapai.ga"
     },
 
     "HostedZoneID" : {
       "Type" : "String",
-      "Default" : "ZRYYTAQLTXOAH"
+      "Default" : "Z2704ULUAWB6HM"
     },
 
     "ListenerCertificateARN" : {
       "Type" : "String",
-      "Default" : "arn:aws:acm:sa-east-1:075204848977:certificate/5dd27333-2898-479e-b010-a7fa86914b14"
+      "Default" : "arn:aws:acm:us-east-1:268174554982:certificate/84c54a37-06bc-4410-94d8-e470ea4d3fa1"
     }
 
   },
@@ -159,13 +159,13 @@
       "StartTime" : "2018-11-23T01:45:00Z"
     }
   },
-  
+
   "ScaleUpPolicy" : {
    "Type" : "AWS::AutoScaling::ScalingPolicy",
      "Properties" : {
         "AdjustmentType" : "ChangeInCapacity",
         "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-        "Cooldown" : "120",
+        "Cooldown" : "70",
         "ScalingAdjustment" : "1"
     }
   },
@@ -195,7 +195,7 @@
      "Properties" : {
       "AdjustmentType" : "ChangeInCapacity",
       "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
-      "Cooldown" : "120",
+      "Cooldown" : "70",
       "ScalingAdjustment" : "-1"
     }
   },
@@ -252,6 +252,28 @@
     },
     "DependsOn" : "VPC"
   },
+
+    "PrivateSubnet1" : {
+       "Type" : "AWS::EC2::Subnet",
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "MapPublicIpOnLaunch": "false",
+         "CidrBlock" : "10.0.3.0/24",
+         "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ1"]}
+       },
+       "DependsOn" : "VPC"
+    },
+
+    "PrivateSubnet2" : {
+       "Type" : "AWS::EC2::Subnet",
+       "Properties" : {
+          "VpcId" : { "Ref" : "VPC" },
+          "MapPublicIpOnLaunch": "false",
+          "CidrBlock" : "10.0.4.0/24",
+          "AvailabilityZone" : { "Fn::FindInMap" : [ "AZMap", { "Ref" : "AWS::Region" }, "AZ2"]}
+        },
+        "DependsOn" : "VPC"
+     },
 
   "ALBSecurityGroup" : {
     "Type" : "AWS::EC2::SecurityGroup",
@@ -343,6 +365,58 @@
         "RouteTableId" : { "Ref" : "RouteTable" }
       }
     },
+
+  "EIP" : {
+    "Type" : "AWS::EC2::EIP",
+    "Properties" : {
+      "Domain" : "VPC"
+    }
+  },
+
+  "NATGateway" : {
+    "DependsOn" : "InternetGatewayAttachment",
+    "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+        "SubnetId" : { "Ref" : "PublicSubnet1"}
+      }
+    },
+
+  "RouteTable2" : {
+    "Type" : "AWS::EC2::RouteTable",
+    "DependsOn" : "VPC",
+    "Properties" : {
+      "VpcId" : { "Ref" : "VPC" }
+    }
+  },
+
+  "Route2" : {
+    "Type" : "AWS::EC2::Route",
+    "DependsOn" : "NATGateway",
+    "Properties" : {
+      "RouteTableId" : { "Ref" : "RouteTable2" },
+      "DestinationCidrBlock" : "0.0.0.0/0",
+      "NatGatewayId" : { "Ref" : "NATGateway" }
+    }
+  },
+
+  "SubnetRouteTableAssociation3" : {
+    "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+    "DependsOn" : "RouteTable2",
+    "Properties" : {
+      "SubnetId" : { "Ref" : "PrivateSubnet1" },
+      "RouteTableId" : { "Ref" : "RouteTable2" }
+    }
+  },
+
+  "SubnetRouteTableAssociation4" : {
+    "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+    "DependsOn" : "RouteTable2",
+    "Properties" : {
+      "SubnetId" : { "Ref" : "PrivateSubnet2" },
+      "RouteTableId" : { "Ref" : "RouteTable2" }
+    }
+  },
 
   "Role": {
     "Type": "AWS::IAM::Role",
